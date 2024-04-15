@@ -2,11 +2,10 @@ package com.example.apigravadora.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 @Entity  //Anotação que indica que classe é uma entidade.
-@Getter @Setter //Anotação que cria automaticamente o Get e Set do atributo.W
+@Data //Anotação que cria automaticamente o Get e Set do atributo.W
 @Table (name = "UsuarioTable") // Anotação que denomina noma da tabela do BD.
 public class Usuario {
 

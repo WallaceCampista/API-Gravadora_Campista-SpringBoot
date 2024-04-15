@@ -1,26 +1,43 @@
 package com.example.apigravadora.service;
 
+import com.example.apigravadora.Dto.RequestDto.MusicaRequestDto;
+import com.example.apigravadora.model.Album;
 import com.example.apigravadora.model.Musica;
+import com.example.apigravadora.repository.AlbumRepository;
 import com.example.apigravadora.repository.MusicaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MusicaService {
 
     @Autowired
     private MusicaRepository musicaRepository;
+    @Autowired
+    private AlbumRepository albumRepository;
 
-    public Musica createMusica(Musica musica) {
+    @Transactional
+    public Musica createMusica(MusicaRequestDto musicaRequestDto) {
 
-        try {
-            musicaRepository.save(musica);
-            return musica;
-        }  catch (Exception e) {
-            throw new RuntimeException("Não foi possível criar música.", e);
-        }
+
+            Musica musicaEntity = new Musica();
+            musicaEntity.setNomeMusica(musicaRequestDto.getNomeMusica());
+            musicaEntity.setResumoMusica(musicaRequestDto.getResumoMusica());
+            musicaEntity.setDuracaoMusica(musicaRequestDto.getDuracaoMusica());
+
+            Optional<Album> album = Optional.ofNullable(albumRepository.findById(musicaRequestDto.getAlbumID()).orElseThrow(() -> new RuntimeException("Album náo encontrado")));
+
+            if (album.isPresent()) {
+                musicaEntity.setAlbum(album.get());
+            }
+
+            musicaRepository.save(musicaEntity);
+
+            return musicaEntity;
     }
 
     public List<Musica> getAllMusicas() {

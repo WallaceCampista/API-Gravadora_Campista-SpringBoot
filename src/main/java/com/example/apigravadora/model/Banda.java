@@ -1,13 +1,13 @@
 package com.example.apigravadora.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.util.List;
 
 @Entity  //Anotação que indica que classe é uma entidade.
-@Getter @Setter //Anotação que cria automaticamente o Get e Set do atributo.
+@Data //Anotação que cria automaticamente o Get e Set do atributo.
 @Table (name = "BandaTable") // Anotação que denomina noma da tabela do BD.
 public class Banda {
 
@@ -26,7 +26,7 @@ public class Banda {
     @Column(name = "Media_Banda")
     private double media;
 
-    @OneToMany(mappedBy = "banda")
+    @OneToMany(mappedBy = "banda", fetch = FetchType.LAZY) //Criando relação de um para muitos
     private List<Album> albums;
 
     //CONSTRUTORES
@@ -38,4 +38,5 @@ public class Banda {
         this.nomeBanda = nomeBanda;
         this.resumoBanda = resumoBanda;
     }
+
 }

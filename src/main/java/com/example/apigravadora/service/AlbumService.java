@@ -5,6 +5,7 @@ import com.example.apigravadora.model.Album;
 import com.example.apigravadora.model.Banda;
 import com.example.apigravadora.repository.AlbumRepository;
 import com.example.apigravadora.repository.BandaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +21,13 @@ public class AlbumService {
     @Autowired
     private BandaRepository bandaRepository;
 
+    @Transactional
     public Album createAlbum(AlbumRequestDto album) {
 
         try {
             Album albumEntity = new Album();
             albumEntity.setNomeAlbum(album.getNomeAlbum());
             albumEntity.setResumoAlbum(album.getResumoAlbum());
-//            albumEntity.setDuracaoTotal(album.getDuracaoTotal());
 
             Optional<Banda> banda = bandaRepository.findById(album.getBandaID());
 
@@ -42,10 +43,12 @@ public class AlbumService {
         }
     }
 
+    @Transactional
     public List<Album> getAllAlbuns() {
         return albumRepository.findAll();
     }
 
+    @Transactional
     public Album getAlbumById(Long id) {
         return albumRepository.findById(id).orElse(null);
     }

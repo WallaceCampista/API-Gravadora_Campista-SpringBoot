@@ -8,5 +8,5 @@ public class MusicaDto {
     private Long id;
     private String nomeMusica;
     private String resumoMusica;
-    private double duracao;
+    private double duracaoMusica;
 }

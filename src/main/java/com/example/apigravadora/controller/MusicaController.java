@@ -1,8 +1,11 @@
 package com.example.apigravadora.controller;
 
 import com.example.apigravadora.Dto.MusicaDto;
+import com.example.apigravadora.Dto.RequestDto.MusicaRequestDto;
 import com.example.apigravadora.model.Musica;
 import com.example.apigravadora.service.MusicaService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,8 +21,10 @@ public class MusicaController {
     @Autowired
     private MusicaService musicaService;
 
-    @PostMapping("/create")
-    public ResponseEntity<MusicaDto> create(@RequestBody Musica musicaRequest) {
+    private final Logger log = LoggerFactory.getLogger(MusicaController.class);
+
+    @PostMapping("/novo-registro")
+    public ResponseEntity<?> create(@RequestBody MusicaRequestDto musicaRequest) {
 
         try {
             Musica musicas = new Musica();
@@ -33,16 +38,19 @@ public class MusicaController {
             musicaDto.setId(musicas.getId());
             musicaDto.setNomeMusica(musicas.getNomeMusica());
             musicaDto.setResumoMusica(musicas.getResumoMusica());
-            musicaDto.setDuracao(musicas.getDuracao());
+            musicaDto.setDuracaoMusica(musicas.getDuracaoMusica());
 
             System.out.println();
             System.out.println("\t##### Musica criada! #####");
             System.out.println();
 
-            return ResponseEntity.created(uri).body(musicaDto);
+            return ResponseEntity.created(uri).body("Musica criada com sucesso!\n\n{\n    \"id\": " +
+                    musicaDto.getId() + ",\n    \"nomeMusica\": \"" + musicaDto.getNomeMusica() +
+                    "\",\n    \"resumoMusica\": \"" + musicaDto.getResumoMusica() +  "\",\n    \"duracaoMusica\": \""
+                    + musicaDto.getDuracaoMusica() + "\"\n}");
 
         } catch (RuntimeException exception) {
-
+//            log.error(exception.getMessage());
             throw new RuntimeException("Náo foi possível salvar musica", exception);
         }
     }
@@ -68,7 +76,7 @@ public class MusicaController {
             // Atualize os dados da musica existente com os fornecidos no musicaRequest
             existingMusica.setNomeMusica(musicaRequest.getNomeMusica());
             existingMusica.setResumoMusica(musicaRequest.getResumoMusica());
-            existingMusica.setDuracao(musicaRequest.getDuracao());
+            existingMusica.setDuracaoMusica(musicaRequest.getDuracaoMusica());
 
             musicaService.updateMusica(existingMusica);
 

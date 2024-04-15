@@ -1,12 +1,12 @@
 package com.example.apigravadora.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 @Entity  //Anotação que indica que classe é uma entidade.
-@Getter @Setter //Anotação que cria automaticamente o Get e Set do atributo.
+@Data //Anotação que cria automaticamente o Get e Set do atributo.
 @Table (name = "MusicaTable") // Anotação que denomina noma da tabela do BD.
 public class Musica {
 
@@ -14,13 +14,9 @@ public class Musica {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long id;
 
-    @ManyToOne //Criando relação de muitos para um
-    @JoinColumn(name = "FK_Banda_id")
-    private Banda bandaID;
-
-    @ManyToOne //Criando relação de muitos para um
-    @JoinColumn(name = "FK_Album_id")
-    private Album albumID;
+//    @ManyToOne //Criando relação de muitos para um
+//    @JoinColumn(name = "FK_Banda_id")
+//    private Banda bandaID;
 
     @NotBlank
     @Column(name = "Nome_Musica")
@@ -32,9 +28,13 @@ public class Musica {
     @Column(name = "Media_Musica")
     private double media;
 
-    @NotBlank
-    @Column(name = "Duracao")
-    private double duracao;
+    @Column(name = "Duracao", nullable = false)
+    private double duracaoMusica;
+
+    @JsonIgnore // Ignora a serialização desse campo pelo Jackson
+    @ManyToOne(fetch = FetchType.LAZY) //Criando relação de muitos para um
+    @JoinColumn(name = "FK_Album_id", referencedColumnName = "albumId", nullable = false)
+    private Album album;
 
     //CONSTRUTORES
     public Musica() {
