@@ -2,7 +2,7 @@ package com.example.apigravadora.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Entity  //Anotação que indica que classe é uma entidade.
@@ -12,18 +12,15 @@ public class Musica {
 
     @Id //Anotação para gerar um id para tabela.
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
-    private Long id;
+    private Long musicaId;
 
-//    @ManyToOne //Criando relação de muitos para um
-//    @JoinColumn(name = "FK_Banda_id")
-//    private Banda bandaID;
-
-    @NotBlank
+    @NotNull
     @Column(name = "Nome_Musica")
     private String nomeMusica;
 
+    @NotNull
     @Column(name = "Resumo_Musica")
-    private String resumoMusica;
+    private String descricaoMusica;
 
     @Column(name = "Media_Musica")
     private double media;
@@ -41,6 +38,6 @@ public class Musica {
     }
     public Musica(String nomeMusica, String resumoMusica) {
         this.nomeMusica = nomeMusica;
-        this.resumoMusica = resumoMusica;
+        this.descricaoMusica = resumoMusica;
     }
 }

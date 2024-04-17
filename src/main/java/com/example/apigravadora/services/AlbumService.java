@@ -1,4 +1,4 @@
-package com.example.apigravadora.service;
+package com.example.apigravadora.services;
 
 import com.example.apigravadora.Dto.RequestDto.AlbumRequestDto;
 import com.example.apigravadora.model.Album;

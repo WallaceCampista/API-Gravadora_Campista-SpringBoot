@@ -1,60 +1,54 @@
 package com.example.apigravadora.controller;
 
-import com.example.apigravadora.Dto.UsuarioDto;
+import com.example.apigravadora.Dto.user.AuthenticationDTO;
+import com.example.apigravadora.Dto.user.LoginResponseDTO;
+import com.example.apigravadora.Dto.user.RegisterDTO;
 import com.example.apigravadora.model.User.Usuario;
+import com.example.apigravadora.infra.security.TokenService;
+import com.example.apigravadora.repository.UserRepository;
 import com.example.apigravadora.services.UsuarioService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
-import java.net.URI;
-import java.util.List;
 
 @RestController
-@RequestMapping("/usuario")
-public class UsuarioController {
-
+@RequestMapping("usuarios")
+public class AuthenticationController {
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    @Autowired
+    private UserRepository repository;
+    @Autowired
+    private TokenService tokenService;
     @Autowired
     private UsuarioService usuarioService;
 
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data){
+        var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
+        var auth = this.authenticationManager.authenticate(usernamePassword);
+
+        var token = tokenService.generateToken((Usuario) auth.getPrincipal());
+
+        return ResponseEntity.ok(new LoginResponseDTO(token));}
+
+
     @PostMapping("/novo-registro")
-    public ResponseEntity<UsuarioDto> create(@RequestBody Usuario usuarioRequest) {
+    public ResponseEntity register(@RequestBody @Valid RegisterDTO data){
+        if(this.repository.findByLogin(data.login()) != null) return ResponseEntity.badRequest().build();
 
-        try {
-            Usuario usuario = new Usuario();
+        String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
+        Usuario newUser = new Usuario(data.login(), encryptedPassword, data.role());
 
-            usuario = this.usuarioService.createUsuario(usuarioRequest);
+        this.repository.save(newUser);
 
-            URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(usuario.getId()).toUri();
-
-            // Criar o objeto de retorno com os dados da banda criada
-            UsuarioDto usuarioDto = new UsuarioDto();
-            usuarioDto.setId(Long.valueOf(usuario.getId()));
-            usuarioDto.setUsername(usuario.getLogin());
-
-            System.out.println();
-            System.out.println("\t##### Usuario criado! #####");
-            System.out.println();
-
-            return ResponseEntity.created(uri).body(usuarioDto);
-
-        } catch (RuntimeException exception) {
-
-            throw new RuntimeException("Náo foi possível salvar usuario", exception);
-        }
+        return ResponseEntity.ok().build();
     }
-    @GetMapping("/listartodosusuario")
-    public ResponseEntity<List<Usuario>> listarTodosUsuarios() {
 
-        List<Usuario> usuario = this.usuarioService.getAllUsuario();
-
-        System.out.println();
-        System.out.println("\t##### Listando todos os Usuários! #####");
-        System.out.println();
-
-        return ResponseEntity.ok().body(usuario);
-    }
     @PutMapping("/update/{id}")
     public ResponseEntity<Void> update(@PathVariable("id") Long id, @RequestBody Usuario usuarioRequest) {
         try {
@@ -79,6 +73,7 @@ public class UsuarioController {
             throw new RuntimeException("Não foi possível atualizar o usuário com id: " + id, e);
         }
     }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
         try {

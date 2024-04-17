@@ -3,7 +3,7 @@ package com.example.apigravadora.controller;
 import com.example.apigravadora.Dto.MusicaDto;
 import com.example.apigravadora.Dto.RequestDto.MusicaRequestDto;
 import com.example.apigravadora.model.Musica;
-import com.example.apigravadora.service.MusicaService;
+import com.example.apigravadora.services.MusicaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +31,13 @@ public class MusicaController {
 
             musicas = this.musicaService.createMusica(musicaRequest);
 
-            URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(musicas.getId()).toUri();
+            URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(musicas.getMusicaId()).toUri();
 
             // Criar o objeto de retorno com os dados da banda criada
             MusicaDto musicaDto = new MusicaDto();
-            musicaDto.setId(musicas.getId());
+            musicaDto.setId(musicas.getMusicaId());
             musicaDto.setNomeMusica(musicas.getNomeMusica());
-            musicaDto.setResumoMusica(musicas.getResumoMusica());
+            musicaDto.setResumoMusica(musicas.getDescricaoMusica());
             musicaDto.setDuracaoMusica(musicas.getDuracaoMusica());
 
             System.out.println();
@@ -75,7 +75,7 @@ public class MusicaController {
             }
             // Atualize os dados da musica existente com os fornecidos no musicaRequest
             existingMusica.setNomeMusica(musicaRequest.getNomeMusica());
-            existingMusica.setResumoMusica(musicaRequest.getResumoMusica());
+            existingMusica.setDescricaoMusica(musicaRequest.getDescricaoMusica());
             existingMusica.setDuracaoMusica(musicaRequest.getDuracaoMusica());
 
             musicaService.updateMusica(existingMusica);

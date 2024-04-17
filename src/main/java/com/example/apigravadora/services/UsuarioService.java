@@ -1,7 +1,7 @@
-package com.example.apigravadora.service;
+package com.example.apigravadora.services;
 
-import com.example.apigravadora.model.Usuario;
-import com.example.apigravadora.repository.UsuarioRepository;
+import com.example.apigravadora.model.User.Usuario;
+import com.example.apigravadora.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,7 +11,7 @@ import java.util.List;
 public class UsuarioService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private UserRepository usuarioRepository;
 
     public Usuario createUsuario(Usuario usuario) {
 
@@ -28,7 +28,7 @@ public class UsuarioService {
     }
 
     public Usuario getUsuarioById(Long id) {
-        return usuarioRepository.findById(id).orElse(null);
+        return usuarioRepository.findById((id)).orElse(null);
     }
 
     public void updateUsuario(Usuario usuario) {

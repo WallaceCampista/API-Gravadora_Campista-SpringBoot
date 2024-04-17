@@ -1,4 +1,4 @@
-package com.example.apigravadora.service;
+package com.example.apigravadora.services;
 
 import com.example.apigravadora.model.Banda;
 import com.example.apigravadora.repository.BandaRepository;

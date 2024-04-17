@@ -4,7 +4,7 @@ import com.example.apigravadora.Dto.AlbumDto;
 import com.example.apigravadora.model.Album;
 import com.example.apigravadora.repository.AlbumRepository;
 import com.example.apigravadora.repository.BandaRepository;
-import com.example.apigravadora.service.AlbumService;
+import com.example.apigravadora.services.AlbumService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

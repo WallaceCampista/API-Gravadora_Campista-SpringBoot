@@ -1,4 +1,4 @@
-package com.example.apigravadora.service;
+package com.example.apigravadora.services;
 
 import com.example.apigravadora.Dto.RequestDto.MusicaRequestDto;
 import com.example.apigravadora.model.Album;
@@ -26,7 +26,7 @@ public class MusicaService {
 
             Musica musicaEntity = new Musica();
             musicaEntity.setNomeMusica(musicaRequestDto.getNomeMusica());
-            musicaEntity.setResumoMusica(musicaRequestDto.getResumoMusica());
+            musicaEntity.setDescricaoMusica(musicaRequestDto.getResumoMusica());
             musicaEntity.setDuracaoMusica(musicaRequestDto.getDuracaoMusica());
 
             Optional<Album> album = Optional.ofNullable(albumRepository.findById(musicaRequestDto.getAlbumID()).orElseThrow(() -> new RuntimeException("Album náo encontrado")));

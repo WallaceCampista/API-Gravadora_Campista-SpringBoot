@@ -2,7 +2,7 @@ package com.example.apigravadora.controller;
 
 import com.example.apigravadora.Dto.BandaDto;
 import com.example.apigravadora.model.Banda;
-import com.example.apigravadora.service.BandaService;
+import com.example.apigravadora.services.BandaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
