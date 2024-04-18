@@ -1,7 +1,9 @@
 package com.example.apigravadora.controller;
 
 import com.example.apigravadora.Dto.BandaDto;
+import com.example.apigravadora.model.Avaliacao.Avaliacao_Banda_Table;
 import com.example.apigravadora.model.Banda;
+import com.example.apigravadora.services.AvaliacaoService;
 import com.example.apigravadora.services.BandaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +19,8 @@ public class BandaController {
 
     @Autowired
     private BandaService bandaService;
+    @Autowired
+    private AvaliacaoService avaliacaoService;
 
     @PostMapping("/novo-registro")
     public ResponseEntity<?> create(@RequestBody Banda bandaRequest) {
@@ -101,6 +105,38 @@ public class BandaController {
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível excluir a banda com id: " + id, e);
+        }
+    }
+    @PostMapping("/{id}/avaliar-banda")
+    public ResponseEntity<?> avaliarBanda(@PathVariable("id") Long id, @RequestBody Avaliacao_Banda_Table avaliacaoRequest) {
+        try {
+            Banda banda = bandaService.getBandaById(id);
+
+            if (banda == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
+            double nota = avaliacaoRequest.getNota();
+            if (nota < 0 || nota > 10) {
+                return ResponseEntity.badRequest().body("Valor invalido, informe [0 a 10]");
+            }
+
+            // Crie uma nova avaliação e associe à banda
+            avaliacaoRequest.setBandaID(banda);
+            // Salve a avaliação no banco de dados
+            avaliacaoService.salvarAvaliacaoBanda(avaliacaoRequest);
+
+            // Recalcule a média da banda e atualize o campo "media"
+            banda.setMedia(banda.calcularMedia());
+            bandaService.updateBanda(banda);
+
+            System.out.println("Banda avaliada com sucesso!");
+
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Não foi possível avaliar a banda com id: " + id, e);
         }
     }
 }

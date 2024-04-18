@@ -6,14 +6,16 @@ import com.example.apigravadora.Dto.user.RegisterDTO;
 import com.example.apigravadora.model.User.Usuario;
 import com.example.apigravadora.infra.security.TokenService;
 import com.example.apigravadora.repository.UserRepository;
-import com.example.apigravadora.services.UsuarioService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("usuarios")
@@ -24,18 +26,20 @@ public class AuthenticationController {
     private UserRepository repository;
     @Autowired
     private TokenService tokenService;
-    @Autowired
-    private UsuarioService usuarioService;
 
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data){
+    public ResponseEntity login(@RequestBody @Valid AuthenticationDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
-        var auth = this.authenticationManager.authenticate(usernamePassword);
+        try {
+            var auth = this.authenticationManager.authenticate(usernamePassword);
 
-        var token = tokenService.generateToken((Usuario) auth.getPrincipal());
+            var token = tokenService.generateToken((Usuario) auth.getPrincipal());
 
-        return ResponseEntity.ok(new LoginResponseDTO(token));}
-
+            return ResponseEntity.ok(new LoginResponseDTO(token));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.badRequest().body("Usuário ou senha inválidos.");
+        }
+    }
 
     @PostMapping("/novo-registro")
     public ResponseEntity register(@RequestBody @Valid RegisterDTO data){
@@ -49,50 +53,32 @@ public class AuthenticationController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/update/{id}")
-    public ResponseEntity<Void> update(@PathVariable("id") Long id, @RequestBody Usuario usuarioRequest) {
-        try {
-            Usuario existeUsuario = usuarioService.getUsuarioById(id);
-
-            if (existeUsuario == null) {
-                return ResponseEntity.notFound().build();
-            }
-            // Atualize os dados dos usuarios existente com os dados fornecidos no usuarioRequest
-            existeUsuario.setLogin(usuarioRequest.getLogin());
-            existeUsuario.setPassword(usuarioRequest.getPassword());
-
-            usuarioService.updateUsuario(existeUsuario);
-
-            System.out.println();
-            System.out.println("\t##### Usuario com id: " + id + "atualizado! #####");
-            System.out.println();
-
-            return ResponseEntity.noContent().build();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Não foi possível atualizar o usuário com id: " + id, e);
-        }
-    }
+//    @PutMapping("/update/{id}")
+//    public ResponseEntity updateUser(@PathVariable Long id, @RequestBody @Valid UpdateUserDTO data) {
+//        Optional<Usuario> optionalUser = repository.findById(id);
+//
+//        if (optionalUser.isPresent()) {
+//            Usuario user = optionalUser.get();
+//            // Atualize os campos relevantes do usuário com base nos dados recebidos em data
+//            // Por exemplo:
+//            // user.setNome(data.getNome());
+//            // user.setEmail(data.getEmail());
+//            repository.save(user);
+//            return ResponseEntity.ok().build();
+//        } else {
+//            return ResponseEntity.notFound().build();
+//        }
+//    }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
-        try {
-            Usuario usuario = usuarioService.getUsuarioById(id);
+    public ResponseEntity deleteUser(@PathVariable Long id) {
+        Optional<Usuario> optionalUser = repository.findById(id);
 
-            if (usuario == null) {
-                return ResponseEntity.notFound().build();
-            }
-
-            usuarioService.deleteUsuario(id);
-
-            System.out.println();
-            System.out.println("\t##### Usuario com id " + id + " excluido com sucesso! #####");
-            System.out.println();
-
-            return ResponseEntity.noContent().build();
-
-        } catch (Exception e) {
-            throw new RuntimeException("Não foi possível excluir o usuário com id: " + id, e);
+        if (optionalUser.isPresent()) {
+            repository.delete(optionalUser.get());
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.notFound().build();
         }
     }
 }

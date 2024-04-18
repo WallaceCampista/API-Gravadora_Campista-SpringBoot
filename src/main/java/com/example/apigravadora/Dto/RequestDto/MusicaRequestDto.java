@@ -7,6 +7,6 @@ public class MusicaRequestDto {
 
     private Long albumID;
     private String nomeMusica;
-    private String resumoMusica;
-    private double duracaoMusica;
+    private String descricaoMusica;
+    private int duracaoMusica;
 }

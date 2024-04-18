@@ -1,8 +1,8 @@
 package com.example.apigravadora.model;
 
+import com.example.apigravadora.model.Avaliacao.Avaliacao_Banda_Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.List;
 @Table (name = "BandaTable") // Anotação que denomina noma da tabela do BD.
 public class Banda {
 
-    @Id //Anotação para gerar um id para tabela.
+    @Id //Anotação para identificar como PK a coluna da tabela.
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long bandaId;
 
@@ -30,14 +30,26 @@ public class Banda {
     @OneToMany(mappedBy = "banda", fetch = FetchType.LAZY) //Criando relação de um para muitos
     private List<Album> albums;
 
+    @JsonIgnore // Ignora a serialização desse campo pelo Jackson
+    @OneToMany(mappedBy = "bandaID", fetch = FetchType.LAZY) //Criando relação de um para muitos
+    private List<Avaliacao_Banda_Table> avaliacoes;
+
     //CONSTRUTORES
     public Banda() {
     }
 
-    public Banda(Long bandaId, String nomeBanda, String resumoBanda) {
-        this.bandaId = bandaId;
-        this.nomeBanda = nomeBanda;
-        this.resumoBanda = resumoBanda;
-    }
+    // Método para calcular a média das avaliações
+    @Transient
+    public double calcularMedia() {
+        if (avaliacoes == null || avaliacoes.isEmpty()) {
+            return 0.0;
+        }
 
+        int total = 0;
+        for (Avaliacao_Banda_Table avaliacao : avaliacoes) {
+            total += (int) avaliacao.getNota();
+        }
+
+        return (double) total / avaliacoes.size();
+    }
 }

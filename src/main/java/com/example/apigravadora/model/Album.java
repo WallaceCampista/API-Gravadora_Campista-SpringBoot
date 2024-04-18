@@ -1,8 +1,8 @@
 package com.example.apigravadora.model;
 
+import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -13,7 +13,7 @@ import java.util.List;
 @Table (name = "AlbumTable") // Anotação que denomina noma da tabela do BD.
 public class Album {
 
-    @Id //Anotação para gerar um id para tabela.
+    @Id //Anotação para identificar como PK a coluna da tabela.
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long albumId;
 
@@ -31,22 +31,51 @@ public class Album {
     @Column(name = "Media_Album")
     private double media;
 
-    @OneToMany(mappedBy = "album", fetch = FetchType.LAZY) //Criando relação de um para muitos
-    private List<Musica> musicas;
-
     @JsonIgnore // Ignora a serialização desse campo pelo Jackson
     @ManyToOne(fetch = FetchType.LAZY) //Criando relação de muitos para um
     @JoinColumn(name = "FK_Banda_id", referencedColumnName = "bandaId", nullable = false)
     private Banda banda;
 
-    //CONSTRUTOR
+    @OneToMany(mappedBy = "album", fetch = FetchType.LAZY) //Criando relação de um para muitos
+    private List<Musica> musicas;
 
+    @JsonIgnore // Ignora a serialização desse campo pelo Jackson
+    @OneToMany(mappedBy = "albumID", fetch = FetchType.LAZY) //Criando relação de um para muitos
+    private List<Avaliacao_Album_Table> avaliacoes;
+
+
+    //CONSTRUTOR
     public Album() {
     }
 
-    public Album(Long albumId, String nomeAlbum, String resumoAlbum) {
-        this.albumId = albumId;
-        this.nomeAlbum = nomeAlbum;
-        this.resumoAlbum = resumoAlbum;
+    // Método para calcular a média das avaliações
+    @Transient
+    public double calcularMedia() {
+        if (avaliacoes == null || avaliacoes.isEmpty()) {
+            return 0.0;
+        }
+
+        int total = 0;
+        for (Avaliacao_Album_Table avaliacao : avaliacoes) {
+            total += (int) avaliacao.getNota();
+        }
+
+        return (double) total / avaliacoes.size();
+    }
+
+    // Método para calcular a duração total das músicas do álbum
+    public double calcularDuracaoTotal() {
+        if (musicas == null || musicas.isEmpty()) {
+            duracaoTotal = 0.0;
+            return 0;
+        }
+
+        double duracaoTotalCalculada = 0.0;
+        for (Musica musica : musicas) {
+            duracaoTotalCalculada += musica.getDuracaoMusica();
+        }
+
+        duracaoTotal = duracaoTotalCalculada;
+        return duracaoTotalCalculada;
     }
 }

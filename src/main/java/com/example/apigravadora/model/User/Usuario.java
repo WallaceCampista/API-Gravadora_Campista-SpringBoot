@@ -20,7 +20,7 @@ import java.util.List;
 
 public class Usuario implements UserDetails {
 
-    @Id //Anotação para gerar um id para tabela.
+    @Id //Anotação para identificar como PK a coluna da tabela.
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long id;
 

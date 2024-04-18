@@ -2,9 +2,9 @@ package com.example.apigravadora.controller;
 
 import com.example.apigravadora.Dto.AlbumDto;
 import com.example.apigravadora.model.Album;
-import com.example.apigravadora.repository.AlbumRepository;
-import com.example.apigravadora.repository.BandaRepository;
+import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
 import com.example.apigravadora.services.AlbumService;
+import com.example.apigravadora.services.AvaliacaoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +20,8 @@ public class AlbumController {
 
     @Autowired
     private AlbumService albumService;
-
     @Autowired
-    private BandaRepository bandaRepository;
-    @Autowired
-    private AlbumRepository albumRepository;
-
+    private AvaliacaoService avaliacaoService;
 
     @PostMapping("/novo-registro")
     public ResponseEntity<?> create(@RequestBody AlbumRequestDto albumRequest) {
@@ -55,7 +51,6 @@ public class AlbumController {
             throw new RuntimeException("- Este id é valido para uma banda existente ?" + "\n- Preencheu (id, Nome, Resumo) obrigatórios?\n\n");
         }
     }
-
     @GetMapping("/listartodosalbuns")
     public ResponseEntity<List<Album>> listarTodosAlbuns() {
 
@@ -85,7 +80,7 @@ public class AlbumController {
             System.out.println("\t##### Album com id " + id + "atualizado! #####");
             System.out.println();
 
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível atualizar o album com id: " + id, e);
@@ -110,6 +105,39 @@ public class AlbumController {
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível excluir o álbum com id: " + id, e);
+        }
+    }
+    @PostMapping("/{id}/avaliar-album")
+    public ResponseEntity<?> avaliarAlbum(@PathVariable("id") Long id, @RequestBody Avaliacao_Album_Table avaliacaoRequest) {
+        try {
+            Album album = albumService.getAlbumById(id);
+
+            if (album == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
+            double nota = avaliacaoRequest.getNota();
+            if (nota < 0 || nota > 10) {
+                return ResponseEntity.badRequest().body("Valor invalido, informe [0 a 10]");
+            }
+
+            // Crie uma nova avaliação e associe à banda
+            avaliacaoRequest.setAlbumID(album);
+            // Salve a avaliação no banco de dados
+            avaliacaoService.salvarAvaliacaoAlbum(avaliacaoRequest);
+
+            // Recalculando a média e duração total do album e atualizando os campos
+            album.setMedia(album.calcularMedia());
+
+            albumService.updateAlbum(album);
+
+            System.out.println("Album avaliado com sucesso!");
+
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Não foi possível avaliar o album com id: " + id, e);
         }
     }
 }

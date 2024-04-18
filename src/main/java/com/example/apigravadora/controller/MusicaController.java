@@ -2,10 +2,11 @@ package com.example.apigravadora.controller;
 
 import com.example.apigravadora.Dto.MusicaDto;
 import com.example.apigravadora.Dto.RequestDto.MusicaRequestDto;
+import com.example.apigravadora.model.Avaliacao.Avaliacao_Musica_Table;
 import com.example.apigravadora.model.Musica;
+import com.example.apigravadora.services.AvaliacaoService;
+import com.example.apigravadora.services.MusicaDuracaoTotalService;
 import com.example.apigravadora.services.MusicaService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,10 @@ public class MusicaController {
 
     @Autowired
     private MusicaService musicaService;
-
-    private final Logger log = LoggerFactory.getLogger(MusicaController.class);
+    @Autowired
+    private AvaliacaoService avaliacaoService;
+    @Autowired
+    private MusicaDuracaoTotalService musicaDuracaoTotalService;
 
     @PostMapping("/novo-registro")
     public ResponseEntity<?> create(@RequestBody MusicaRequestDto musicaRequest) {
@@ -39,6 +42,8 @@ public class MusicaController {
             musicaDto.setNomeMusica(musicas.getNomeMusica());
             musicaDto.setResumoMusica(musicas.getDescricaoMusica());
             musicaDto.setDuracaoMusica(musicas.getDuracaoMusica());
+
+            musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
 
             System.out.println();
             System.out.println("\t##### Musica criada! #####");
@@ -79,6 +84,7 @@ public class MusicaController {
             existingMusica.setDuracaoMusica(musicaRequest.getDuracaoMusica());
 
             musicaService.updateMusica(existingMusica);
+            musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
 
             System.out.println();
             System.out.println("\t##### Musica com id " + id + " excluida com sucesso! #####");
@@ -100,6 +106,7 @@ public class MusicaController {
             }
 
             musicaService.deleteMusica(id);
+            musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
 
             System.out.println();
             System.out.println("\t##### Musica com id " + id + " deletada! #####");
@@ -109,6 +116,38 @@ public class MusicaController {
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível excluir musica com id: " + id, e);
+        }
+    }
+    @PostMapping("/{id}/avaliar-musica")
+    public ResponseEntity<?> avaliarBanda(@PathVariable("id") Long id, @RequestBody Avaliacao_Musica_Table avaliacaoRequest) {
+        try {
+            Musica musica = musicaService.getMusicaById(id);
+
+            if (musica == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
+            double nota = avaliacaoRequest.getNota();
+            if (nota < 1 || nota > 10) {
+                return ResponseEntity.badRequest().body("Valor invalido, informe [1 a 10]");
+            }
+
+            // Crie uma nova avaliação e associe à banda
+            avaliacaoRequest.setMusicaID(musica);
+            // Salve a avaliação no banco de dados
+            avaliacaoService.salvarAvaliacaoMusica(avaliacaoRequest);
+
+            // Recalcule a média da banda e atualize o campo "media"
+            musica.setMedia(musica.calcularMedia());
+            musicaService.updateMusica(musica);
+
+            System.out.println("Musica avaliada com sucesso!");
+
+            return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            throw new RuntimeException("Não foi possível avaliar a musica com id: " + id, e);
         }
     }
 }

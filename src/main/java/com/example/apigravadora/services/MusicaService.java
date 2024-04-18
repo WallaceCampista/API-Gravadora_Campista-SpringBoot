@@ -26,7 +26,7 @@ public class MusicaService {
 
             Musica musicaEntity = new Musica();
             musicaEntity.setNomeMusica(musicaRequestDto.getNomeMusica());
-            musicaEntity.setDescricaoMusica(musicaRequestDto.getResumoMusica());
+            musicaEntity.setDescricaoMusica(musicaRequestDto.getDescricaoMusica());
             musicaEntity.setDuracaoMusica(musicaRequestDto.getDuracaoMusica());
 
             Optional<Album> album = Optional.ofNullable(albumRepository.findById(musicaRequestDto.getAlbumID()).orElseThrow(() -> new RuntimeException("Album náo encontrado")));

@@ -17,7 +17,6 @@ public class AlbumService {
 
     @Autowired
     private AlbumRepository albumRepository;
-
     @Autowired
     private BandaRepository bandaRepository;
 
@@ -48,7 +47,6 @@ public class AlbumService {
         return albumRepository.findAll();
     }
 
-    @Transactional
     public Album getAlbumById(Long id) {
         return albumRepository.findById(id).orElse(null);
     }
