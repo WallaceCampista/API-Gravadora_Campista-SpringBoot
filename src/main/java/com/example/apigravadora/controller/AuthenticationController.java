@@ -42,7 +42,7 @@ public class AuthenticationController {
     }
 
     @PostMapping("/novo-registro")
-    public ResponseEntity register(@RequestBody @Valid RegisterDTO data){
+    public ResponseEntity register(@Valid @RequestBody RegisterDTO data){
         if(this.repository.findByLogin(data.login()) != null) return ResponseEntity.badRequest().build();
 
         String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
