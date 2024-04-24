@@ -7,6 +7,7 @@ import com.example.apigravadora.model.Musica;
 import com.example.apigravadora.services.AvaliacaoService;
 import com.example.apigravadora.services.MusicaDuracaoTotalService;
 import com.example.apigravadora.services.MusicaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class MusicaController {
     private MusicaDuracaoTotalService musicaDuracaoTotalService;
 
     @PostMapping("/novo-registro")
-    public ResponseEntity<?> create(@RequestBody MusicaRequestDto musicaRequest) {
+    public ResponseEntity<?> create(@Valid @RequestBody MusicaRequestDto musicaRequest) {
 
         try {
             Musica musicas = new Musica();
@@ -65,7 +66,7 @@ public class MusicaController {
         List<Musica> musicas = this.musicaService.getAllMusicas();
 
         System.out.println();
-        System.out.println("\t##### Listando todas as Musicas! #####");
+        System.out.println("\t##### Listando todas as Músicas! #####");
         System.out.println();
 
         return ResponseEntity.ok().body(musicas);
@@ -130,7 +131,7 @@ public class MusicaController {
             // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
             double nota = avaliacaoRequest.getNota();
             if (nota < 1 || nota > 10) {
-                return ResponseEntity.badRequest().body("Valor invalido, informe [1 a 10]");
+                return ResponseEntity.badRequest().body("Valor inválido, informe [1 a 10]");
             }
 
             // Crie uma nova avaliação e associe à banda

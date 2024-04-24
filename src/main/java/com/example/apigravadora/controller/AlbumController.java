@@ -5,6 +5,7 @@ import com.example.apigravadora.model.Album;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
 import com.example.apigravadora.services.AlbumService;
 import com.example.apigravadora.services.AvaliacaoService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class AlbumController {
     private AvaliacaoService avaliacaoService;
 
     @PostMapping("/novo-registro")
-    public ResponseEntity<?> create(@RequestBody AlbumRequestDto albumRequest) {
+    public ResponseEntity<?> create(@Valid @RequestBody AlbumRequestDto albumRequest) {
         try {
             // Salva o álbum no banco de dados
             Album albuns = new Album();
@@ -119,7 +120,7 @@ public class AlbumController {
             // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
             double nota = avaliacaoRequest.getNota();
             if (nota < 0 || nota > 10) {
-                return ResponseEntity.badRequest().body("Valor invalido, informe [0 a 10]");
+                return ResponseEntity.badRequest().body("Valor inválido, informe [0 a 10]");
             }
 
             // Crie uma nova avaliação e associe à banda

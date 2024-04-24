@@ -5,6 +5,7 @@ import com.example.apigravadora.model.Avaliacao.Avaliacao_Banda_Table;
 import com.example.apigravadora.model.Banda;
 import com.example.apigravadora.services.AvaliacaoService;
 import com.example.apigravadora.services.BandaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class BandaController {
     private AvaliacaoService avaliacaoService;
 
     @PostMapping("/novo-registro")
-    public ResponseEntity<?> create(@RequestBody Banda bandaRequest) {
+    public ResponseEntity<?> create(@Valid @RequestBody Banda bandaRequest) {
 
         try {
             Banda bandas = new Banda();
@@ -48,7 +49,7 @@ public class BandaController {
 
         } catch (RuntimeException exception) {
 
-            throw new RuntimeException("Nome e resumo da banda são obrigátorios !!!");
+            throw new RuntimeException("Nome e resumo da banda são obrigatórios !!!");
         }
     }
     @GetMapping("/listartodasbandas")
@@ -98,7 +99,7 @@ public class BandaController {
             bandaService.deleteBanda(id);
 
             System.out.println();
-            System.out.println("\t##### Banda com id " + id + " excluida com sucesso! #####");
+            System.out.println("\t##### Banda com id " + id + " excluída com sucesso! #####");
             System.out.println();
 
             return ResponseEntity.noContent().build();
@@ -119,7 +120,7 @@ public class BandaController {
             // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
             double nota = avaliacaoRequest.getNota();
             if (nota < 0 || nota > 10) {
-                return ResponseEntity.badRequest().body("Valor invalido, informe [0 a 10]");
+                return ResponseEntity.badRequest().body("Valor inálido, informe [0 a 10]");
             }
 
             // Crie uma nova avaliação e associe à banda
