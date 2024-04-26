@@ -19,6 +19,6 @@ public class Avaliacao_Album_Table {
     @JoinColumn(name = "FK_Album_id")
     private Album albumID;
 
-    @Column(name = "Nota_Album")
+    @Column(name = "Nota_Album", nullable = false)
     private double nota;
 }

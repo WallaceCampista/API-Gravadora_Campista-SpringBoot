@@ -1,9 +1,8 @@
 package com.example.apigravadora.Dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter @Setter //Anotação que cria automaticamente o Get e Set do atributo.
+@Data //Anotação que cria automaticamente o Get e Set do atributo.
 public class MusicaDto {
     private Long id;
     private String nomeMusica;

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 public class AvaliacaoService {
 
     @Autowired
-    private static AvaliacaoAlbumRepository avaliacaoAlbumRepository;
+    private AvaliacaoAlbumRepository avaliacaoAlbumRepository;
 
     @Autowired
     private AvaliacaoBandaRepository avaliacaoBandaRepository;

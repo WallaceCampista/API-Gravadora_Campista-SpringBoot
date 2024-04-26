@@ -8,6 +8,7 @@ import com.example.apigravadora.infra.security.TokenService;
 import com.example.apigravadora.repository.UserRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,22 +36,54 @@ public class AuthenticationController {
 
             var token = tokenService.generateToken((Usuario) auth.getPrincipal());
 
-            return ResponseEntity.ok(new LoginResponseDTO(token));
+            System.out.println("\t##### Usuário: " + data.login() + " logado #####"); //retorno no terminal caso de certo.
+            System.out.println();
+
+            return ResponseEntity.ok(new LoginResponseDTO(token)); //retorno de requisição caso de certo.
         } catch (AuthenticationException e) {
-            return ResponseEntity.badRequest().body("Usuário ou senha inválidos.");
+            return ResponseEntity.badRequest().body("Usuário ou senha inválidos."); //retorno de requisição caso de errado.
         }
     }
 
     @PostMapping("/novo-registro")
     public ResponseEntity register(@Valid @RequestBody RegisterDTO data){
-        if(this.repository.findByLogin(data.login()) != null) return ResponseEntity.badRequest().build();
+        try {
+            if(this.repository.findByLogin(data.login()) != null) {
+                String msg = "Login existente, escolha outro!";
+                return ResponseEntity.badRequest().body(msg);
+            }
 
-        String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
-        Usuario newUser = new Usuario(data.login(), encryptedPassword, data.role());
+            String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
+            Usuario newUser = new Usuario(data.login(), encryptedPassword, data.role());
 
-        this.repository.save(newUser);
+            this.repository.save(newUser);
 
-        return ResponseEntity.ok().build();
+            System.out.println();
+            System.out.println("\t##### Usuário: " + data.login() + ", com permissão: " + data.role() + ", criado com sucesso! #####"); //retorno no terminal caso de certo.
+            System.out.println();
+
+
+            return ResponseEntity.ok().body("Usuário criado com sucesso!");
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body("Preencha os campos obrigatorios!");
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity deleteUser(@PathVariable Long id) {
+        Optional<Usuario> optionalUser = repository.findById(id);
+
+        if (optionalUser.isPresent()) {
+            repository.delete(optionalUser.get());
+            String mensagem = "Usuário do id: " + id + ", deletado com sucesso!";
+            System.out.println();
+            System.out.println(mensagem); //retorno no terminal caso de certo.
+            System.out.println();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensagem); //retorno de requisição caso de certo.
+        } else {
+            String mensagem = "Usuário não encontrado, revise o id informado.";
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensagem); //retorno de requisição caso de erro.
+        }
     }
 
 //    @PutMapping("/update/{id}")
@@ -70,15 +103,4 @@ public class AuthenticationController {
 //        }
 //    }
 
-    @DeleteMapping("/delete/{id}")
-    public ResponseEntity deleteUser(@PathVariable Long id) {
-        Optional<Usuario> optionalUser = repository.findById(id);
-
-        if (optionalUser.isPresent()) {
-            repository.delete(optionalUser.get());
-            return ResponseEntity.ok().build();
-        } else {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }

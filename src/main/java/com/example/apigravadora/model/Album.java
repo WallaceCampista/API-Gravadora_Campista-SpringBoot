@@ -3,8 +3,6 @@ package com.example.apigravadora.model;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 

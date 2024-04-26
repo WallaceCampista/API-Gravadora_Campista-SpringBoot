@@ -19,6 +19,6 @@ public class Avaliacao_Banda_Table {
     @JoinColumn(name = "FK_Banda_id")
     private Banda bandaID;
 
-    @Column(name = "Nota_Banda")
+    @Column(name = "Nota_Banda", nullable = false)
     private double nota;
 }

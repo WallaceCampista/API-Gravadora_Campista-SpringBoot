@@ -1,5 +1,8 @@
 package com.example.apigravadora.exception.error;
 
+import lombok.Data;
+
+@Data
 public class ApiErrorDetails {
     private long timestamp;
     private int status;

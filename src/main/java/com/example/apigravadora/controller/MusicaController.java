@@ -9,6 +9,7 @@ import com.example.apigravadora.services.MusicaDuracaoTotalService;
 import com.example.apigravadora.services.MusicaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
@@ -31,7 +32,7 @@ public class MusicaController {
     public ResponseEntity<?> create(@Valid @RequestBody MusicaRequestDto musicaRequest) {
 
         try {
-            Musica musicas = new Musica();
+            Musica musicas;
 
             musicas = this.musicaService.createMusica(musicaRequest);
 
@@ -46,8 +47,7 @@ public class MusicaController {
 
             musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
 
-            System.out.println();
-            System.out.println("\t##### Musica criada! #####");
+            System.out.println("\t##### Musica" + musicas.getNomeMusica() + "criada! #####");
             System.out.println();
 
             return ResponseEntity.created(uri).body("Musica criada com sucesso!\n\n{\n    \"id\": " +
@@ -56,28 +56,53 @@ public class MusicaController {
                     + musicaDto.getDuracaoMusica() + "\"\n}");
 
         } catch (RuntimeException exception) {
-//            log.error(exception.getMessage());
             throw new RuntimeException("Náo foi possível salvar musica", exception);
         }
     }
-    @GetMapping("/listartodasmusicas")
-    public ResponseEntity<List<Musica>> listarTodosMusicas() {
+    @GetMapping("/listarnomesmusicas")
+    public ResponseEntity<String> listarnomesmusicas() {
+        try {
+            List<Musica> musicas = this.musicaService.getAllMusicas();
 
-        List<Musica> musicas = this.musicaService.getAllMusicas();
 
-        System.out.println();
-        System.out.println("\t##### Listando todas as Músicas! #####");
-        System.out.println();
+            List<String> nomesMusicas = musicas.stream()
+                    .map(Musica::getNomeMusica)
+                    .toList();
 
-        return ResponseEntity.ok().body(musicas);
+            System.out.println();
+            System.out.println("\t##### Listando nomes das Musicas! #####"); //retorno no terminal caso de certo.
+            System.out.println();
+
+            String mensagem = "Musicas cadastrados:\n\n" + nomesMusicas;
+            return ResponseEntity.ok().body(mensagem); //retorno de requisição caso de certo.
+
+        } catch (Exception e) {
+            throw new RuntimeException("Não foi possível listar musicas, por favor, tente novamente ", e);
+        }
+    }
+    @GetMapping("/dadoscompletosmusicas")
+    public ResponseEntity<List<Musica>> dadoscompletosmusicas() {
+        try {
+            List<Musica> musicas = this.musicaService.getAllMusicas();
+
+            System.out.println();
+            System.out.println("\t##### Listando dados completos das musicas! #####"); //retorno no terminal caso de certo.
+            System.out.println();
+
+            return ResponseEntity.ok().body(musicas); //retorno de requisição caso de certo.
+
+        } catch (Exception e) {
+            throw new RuntimeException("Não foi possível listar dados completos, por favor, tente novamente ", e);
+        }
     }
     @PutMapping("/update/{id}")
-    public ResponseEntity<Void> update(@PathVariable("id") Long id, @RequestBody Musica musicaRequest) {
+    public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody Musica musicaRequest) {
         try {
             Musica existingMusica = musicaService.getMusicaById(id);
 
             if (existingMusica == null) {
-                return ResponseEntity.notFound().build();
+                String mensagem = "ID: " + id + " não foi encontrado nos registros.";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensagem); //retorno de requisição caso de id seja invalido.
             }
             // Atualize os dados da musica existente com os fornecidos no musicaRequest
             existingMusica.setNomeMusica(musicaRequest.getNomeMusica());
@@ -88,32 +113,35 @@ public class MusicaController {
             musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
 
             System.out.println();
-            System.out.println("\t##### Musica com id " + id + " excluida com sucesso! #####");
+            System.out.println("\t##### Musica " + existingMusica.getNomeMusica() + " atualizada! #####"); //retorno no terminal caso de certo.
             System.out.println();
 
-            return ResponseEntity.noContent().build();
+            String mensagem = "Musica " + existingMusica.getNomeMusica() + " atualizada com sucesso!";
+            return ResponseEntity.ok().body(mensagem); //retorno de requisição caso de certo.
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível atualizar musica com id: " + id, e);
         }
     }
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> delete(@PathVariable("id") Long id) {
+    public ResponseEntity<?> delete(@PathVariable("id") Long id) {
         try {
             Musica musica = musicaService.getMusicaById(id);
 
             if (musica == null) {
-                return ResponseEntity.notFound().build();
+                String mensagem = "ID: " + id + " não foi encontrado nos registros.";
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensagem); //retorno de requisição caso de id seja invalido.
             }
 
             musicaService.deleteMusica(id);
-            musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
+            musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente(); //atualiza atributo ""duracaoTotal
 
             System.out.println();
-            System.out.println("\t##### Musica com id " + id + " deletada! #####");
+            System.out.println("\t##### Musica com id " + id + " deletada! #####"); //retorno no terminal caso de certo.
             System.out.println();
 
-            return ResponseEntity.noContent().build();
+            String mensagem = "Musica com id " + id + " excluída com sucesso!";
+            return ResponseEntity.ok().body(mensagem); //retorno de requisição caso de certo.
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível excluir musica com id: " + id, e);
@@ -125,13 +153,15 @@ public class MusicaController {
             Musica musica = musicaService.getMusicaById(id);
 
             if (musica == null) {
-                return ResponseEntity.notFound().build();
+                String mensagem = "Musica não encontrado com o id: " + id;
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(mensagem);
             }
 
-            // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
             double nota = avaliacaoRequest.getNota();
+
+            // Verifique se a nota está dentro do intervalo desejado (por exemplo, de 0 a 10)
             if (nota < 1 || nota > 10) {
-                return ResponseEntity.badRequest().body("Valor inválido, informe [1 a 10]");
+                return ResponseEntity.badRequest().body("Valor inválido!! Informe entre 0 e 10");
             }
 
             // Crie uma nova avaliação e associe à banda
@@ -139,13 +169,14 @@ public class MusicaController {
             // Salve a avaliação no banco de dados
             avaliacaoService.salvarAvaliacaoMusica(avaliacaoRequest);
 
-            // Recalcule a média da banda e atualize o campo "media"
+            // Recalculando a média de notas da musica e atualizando
             musica.setMedia(musica.calcularMedia());
             musicaService.updateMusica(musica);
 
-            System.out.println("Musica avaliada com sucesso!");
+            System.out.println("Musica avaliado com sucesso!"); //Exibe no terminal
+            String mensagem = "Nota: " + nota + ", atribuída a musica: " + musica.getNomeMusica() + ", com sucesso!"; //configura msg para exibir no corpo da requisição
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok().body(mensagem);
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível avaliar a musica com id: " + id, e);
