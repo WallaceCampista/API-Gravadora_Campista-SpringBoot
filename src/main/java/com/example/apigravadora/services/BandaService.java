@@ -5,6 +5,7 @@ import com.example.apigravadora.repository.BandaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.print.Pageable;
 import java.util.List;
 
 @Service
@@ -14,12 +15,14 @@ public class BandaService {
     private BandaRepository bandaRepository;
 
     public Banda createBanda(Banda banda) {
-
         try {
+            // Verifica se a banda já existe no banco de dados pelo nome
+//            if (bandaRepository.findByNome(banda.getNomeBanda()) != null) {
+//                throw new RuntimeException("Banda com este nome já existe.");
+//            }
             bandaRepository.save(banda);
-            System.out.println();
             return banda;
-        }  catch (Exception e) {
+        } catch (Exception e) {
             throw new RuntimeException("Não foi possível criar a banda.", e);
         }
     }
@@ -27,6 +30,10 @@ public class BandaService {
     public List<Banda> getAllBanda() {
         return bandaRepository.findAll();
     }
+
+//    public Page<Banda> getAllBanda(Pageable pageable) {
+//        return bandaRepository.findAll(pageable);
+//    }
 
     public Banda getBandaById(Long id) {
         return bandaRepository.findById(id).orElse(null);

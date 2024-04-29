@@ -32,6 +32,16 @@ public class AuthenticationController {
     public ResponseEntity login(@Valid @RequestBody AuthenticationDTO data) {
         var usernamePassword = new UsernamePasswordAuthenticationToken(data.login(), data.password());
         try {
+            // Verifica se o login está vazio
+            if (data.login().isEmpty()) {
+                return ResponseEntity.badRequest().body("LOGIN não pode estar vazio!");
+            }
+
+            // Verifica se a senha está vazia
+            if (data.password().isEmpty()) {
+                return ResponseEntity.badRequest().body("SENHA não pode estar vazia!");
+            }
+
             var auth = this.authenticationManager.authenticate(usernamePassword);
 
             var token = tokenService.generateToken((Usuario) auth.getPrincipal());
@@ -41,34 +51,38 @@ public class AuthenticationController {
 
             return ResponseEntity.ok(new LoginResponseDTO(token)); //retorno de requisição caso de certo.
         } catch (AuthenticationException e) {
-            return ResponseEntity.badRequest().body("Usuário ou senha inválidos."); //retorno de requisição caso de errado.
+            return ResponseEntity.badRequest().body("Perfil de usuário não encontrado."); //retorno de requisição caso de errado.
         }
     }
-
     @PostMapping("/novo-registro")
-    public ResponseEntity register(@Valid @RequestBody RegisterDTO data){
-        try {
-            if(this.repository.findByLogin(data.login()) != null) {
-                String msg = "Login existente, escolha outro!";
-                return ResponseEntity.badRequest().body(msg);
-            }
-
-            String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
-            Usuario newUser = new Usuario(data.login(), encryptedPassword, data.role());
-
-            this.repository.save(newUser);
-
-            System.out.println();
-            System.out.println("\t##### Usuário: " + data.login() + ", com permissão: " + data.role() + ", criado com sucesso! #####"); //retorno no terminal caso de certo.
-            System.out.println();
-
-
-            return ResponseEntity.ok().body("Usuário criado com sucesso!");
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body("Preencha os campos obrigatorios!");
+    public ResponseEntity register(@RequestBody RegisterDTO data) {
+        // Verifica se o login está vazio
+        if (data.login().isEmpty()) {
+            return ResponseEntity.badRequest().body("LOGIN não pode estar vazio!");
         }
-    }
 
+        // Verifica se a senha está vazia
+        if (data.password().isEmpty()) {
+            return ResponseEntity.badRequest().body("SENHA não pode estar vazia!");
+        }
+
+        // Verifica se o login já existe
+        if (this.repository.findByLogin(data.login()) != null) {
+            return ResponseEntity.badRequest().body("Login já existe, escolha outro!");
+        }
+
+        //Criptografando a senha
+        String encryptedPassword = new BCryptPasswordEncoder().encode(data.password());
+
+        Usuario newUser = new Usuario(data.login(), encryptedPassword, data.role());
+        this.repository.save(newUser);
+
+        System.out.println();
+        System.out.println("\t##### Usuário: " + data.login() + ", com permissão: " + data.role() + ", criado com sucesso! #####"); //retorno no terminal caso de certo.
+        System.out.println();
+
+        return ResponseEntity.ok().body("Usuário criado com sucesso!");
+    }
     @DeleteMapping("/delete/{id}")
     public ResponseEntity deleteUser(@PathVariable Long id) {
         Optional<Usuario> optionalUser = repository.findById(id);

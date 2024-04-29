@@ -2,6 +2,7 @@ package com.example.apigravadora.model.User;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.List;
 @Data //Anotação que cria automaticamente o Get e Set do atributo.
 @NoArgsConstructor
 @AllArgsConstructor
-@Table (name = "users_table") // Anotação que denomina noma da tabela do BD.
+@Table (name = "users_table") // Anotação que denomina nome da tabela do BD.
 
 public class Usuario implements UserDetails {
 
@@ -24,11 +25,11 @@ public class Usuario implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long id;
 
-    @NotBlank (message = "O campo login é obrigatorio")
+    @NotEmpty @NotBlank
     @Column(name = "username", unique = true, nullable = false)
     private String login;
 
-    @NotBlank (message = "O campo password é obrigatorio")
+    @NotEmpty @NotBlank
     @Column(name = "password", nullable = false)
     private String password;
 

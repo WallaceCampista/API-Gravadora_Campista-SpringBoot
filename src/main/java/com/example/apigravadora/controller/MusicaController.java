@@ -32,6 +32,16 @@ public class MusicaController {
     public ResponseEntity<?> create(@Valid @RequestBody MusicaRequestDto musicaRequest) {
 
         try {
+            // Verifica se o nome da musica está vazio
+            if (musicaRequest.getNomeMusica().isEmpty()) {
+                return ResponseEntity.badRequest().body("NOME da musica não pode estar vazio!");
+            }
+
+            // Verifica se o resumo da musica está vazio
+            if (musicaRequest.getDescricaoMusica().isEmpty()) {
+                return ResponseEntity.badRequest().body("DESCIÇÃO da musica não pode estar vazia!");
+            }
+
             Musica musicas;
 
             musicas = this.musicaService.createMusica(musicaRequest);
@@ -42,7 +52,7 @@ public class MusicaController {
             MusicaDto musicaDto = new MusicaDto();
             musicaDto.setId(musicas.getMusicaId());
             musicaDto.setNomeMusica(musicas.getNomeMusica());
-            musicaDto.setResumoMusica(musicas.getDescricaoMusica());
+            musicaDto.setDescricaoMusica(musicas.getDescricaoMusica());
             musicaDto.setDuracaoMusica(musicas.getDuracaoMusica());
 
             musicaDuracaoTotalService.atualizarDuracaoTotalGlobalmente();
@@ -52,15 +62,15 @@ public class MusicaController {
 
             return ResponseEntity.created(uri).body("Musica criada com sucesso!\n\n{\n    \"id\": " +
                     musicaDto.getId() + ",\n    \"nomeMusica\": \"" + musicaDto.getNomeMusica() +
-                    "\",\n    \"resumoMusica\": \"" + musicaDto.getResumoMusica() +  "\",\n    \"duracaoMusica\": \""
+                    "\",\n    \"resumoMusica\": \"" + musicaDto.getDescricaoMusica() +  "\",\n    \"duracaoMusica\": \""
                     + musicaDto.getDuracaoMusica() + "\"\n}");
 
         } catch (RuntimeException exception) {
             throw new RuntimeException("Náo foi possível salvar musica", exception);
         }
     }
-    @GetMapping("/listarnomesmusicas")
-    public ResponseEntity<String> listarnomesmusicas() {
+    @GetMapping("/listarmusicassimples")
+    public ResponseEntity<List<String>> listarmusicassimples() {
         try {
             List<Musica> musicas = this.musicaService.getAllMusicas();
 
@@ -73,26 +83,26 @@ public class MusicaController {
             System.out.println("\t##### Listando nomes das Musicas! #####"); //retorno no terminal caso de certo.
             System.out.println();
 
-            String mensagem = "Musicas cadastrados:\n\n" + nomesMusicas;
-            return ResponseEntity.ok().body(mensagem); //retorno de requisição caso de certo.
+            String mensagem = "Musicas cadastradas:\n\n" + nomesMusicas;
+            return ResponseEntity.ok().body(nomesMusicas); //retorno de requisição caso de certo.
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível listar musicas, por favor, tente novamente ", e);
         }
     }
-    @GetMapping("/dadoscompletosmusicas")
-    public ResponseEntity<List<Musica>> dadoscompletosmusicas() {
+    @GetMapping("/listarmusicascompleto")
+    public ResponseEntity<List<Musica>> listarmusicascompleto() {
         try {
-            List<Musica> musicas = this.musicaService.getAllMusicas();
+            List<Musica> musicas = musicaService.getAllMusicas();
 
             System.out.println();
-            System.out.println("\t##### Listando dados completos das musicas! #####"); //retorno no terminal caso de certo.
+            System.out.println("\t##### Listando dados completos das Musicas! #####"); //retorno no terminal.
             System.out.println();
 
-            return ResponseEntity.ok().body(musicas); //retorno de requisição caso de certo.
+            return ResponseEntity.ok().body(musicas); //retorno de requisição.
 
         } catch (Exception e) {
-            throw new RuntimeException("Não foi possível listar dados completos, por favor, tente novamente ", e);
+            throw new RuntimeException("Não foi possível listar musicas, por favor, tente novamente ", e);
         }
     }
     @PutMapping("/update/{id}")
@@ -173,10 +183,10 @@ public class MusicaController {
             musica.setMedia(musica.calcularMedia());
             musicaService.updateMusica(musica);
 
-            System.out.println("Musica avaliado com sucesso!"); //Exibe no terminal
-            String mensagem = "Nota: " + nota + ", atribuída a musica: " + musica.getNomeMusica() + ", com sucesso!"; //configura msg para exibir no corpo da requisição
+            String mensagem = "Nota: " + nota + ", atribuída a musica: " + musica.getNomeMusica() + ", com sucesso!";
 
-            return ResponseEntity.ok().body(mensagem);
+            System.out.println(mensagem); //Exibe no terminal
+            return ResponseEntity.ok().body(mensagem); //Exibe no corpo da requisição
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível avaliar a musica com id: " + id, e);

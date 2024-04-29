@@ -1,9 +1,11 @@
 package com.example.apigravadora.controller;
 
 import com.example.apigravadora.Dto.AlbumDto;
+import com.example.apigravadora.Dto.BandaDto;
 import com.example.apigravadora.Dto.RequestDto.AlbumRequestDto;
 import com.example.apigravadora.model.Album;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
+import com.example.apigravadora.model.Banda;
 import com.example.apigravadora.services.AlbumService;
 import com.example.apigravadora.services.AvaliacaoService;
 import jakarta.validation.Valid;
@@ -28,7 +30,16 @@ public class AlbumController {
     @PostMapping("/novo-registro")
     public ResponseEntity<?> create(@Valid @RequestBody AlbumRequestDto albumRequest) {
         try {
-            // Salva o álbum no banco de dados
+            // Verifica se o nome do album está vazio
+            if (albumRequest.getNomeAlbum().isEmpty()) {
+                return ResponseEntity.badRequest().body("NOME do album não pode estar vazio!");
+            }
+
+            // Verifica se o resumo do album está vazio
+            if (albumRequest.getResumoAlbum().isEmpty()) {
+                return ResponseEntity.badRequest().body("RESUMO do album não pode estar vazio!");
+            }
+
             Album albuns;
 
             albuns = this.albumService.createAlbum(albumRequest);
@@ -52,40 +63,35 @@ public class AlbumController {
             throw new RuntimeException("- Este id é valido para uma banda existente ?" + "\n- Preencheu (id, Nome, Resumo) obrigatórios?\n\n");
         }
     }
-    @GetMapping("/listarnomesalbuns")
-    public ResponseEntity<String> listarnomesalbuns() {
+    @GetMapping("/listaralbunssimples")
+    public ResponseEntity<List<AlbumDto>> listaralbunssimples() {
         try {
-            List<Album> albuns = this.albumService.getAllAlbuns();
+            List<Album> albuns = albumService.getAllAlbuns();
 
-
-            List<String> nomesAlbuns = albuns.stream()
-                    .map(Album::getNomeAlbum)
+            List<AlbumDto> albunsDTO = albuns.stream()
+                    .map(album -> new AlbumDto(album.getAlbumId(), album.getNomeAlbum(), album.getResumoAlbum()))
                     .toList();
 
-            System.out.println();
-            System.out.println("\t##### Listando nomes dos Albuns! #####"); //retorno no terminal caso de certo.
-            System.out.println();
+            System.out.println("\t##### Listando dados simples dos Albuns! #####");
 
-            String mensagem = "Albuns cadastrados:\n\n" + nomesAlbuns;
-            return ResponseEntity.ok().body(mensagem); //retorno de requisição caso de certo.
-
+            return ResponseEntity.ok(albunsDTO);
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível listar albuns, por favor, tente novamente ", e);
         }
     }
-    @GetMapping("/dadoscompletosbanda")
-    public ResponseEntity<List<Album>> dadoscompletosbanda() {
+    @GetMapping("/listaralbunscompleto")
+    public ResponseEntity<List<Album>> listaralbunscompleto() {
         try {
-            List<Album> albuns = this.albumService.getAllAlbuns();
+            List<Album> albuns = albumService.getAllAlbuns();
 
             System.out.println();
-            System.out.println("\t##### Listando dados completos dos Albuns! #####"); //retorno no terminal caso de certo.
+            System.out.println("\t##### Listando dados completos dos Albuns! #####"); //retorno no terminal.
             System.out.println();
 
-            return ResponseEntity.ok().body(albuns); //retorno de requisição caso de certo.
+            return ResponseEntity.ok().body(albuns); //retorno de requisição.
 
         } catch (Exception e) {
-            throw new RuntimeException("Não foi possível listar dados completos, por favor, tente novamente ", e);
+            throw new RuntimeException("Não foi possível listar albuns, por favor, tente novamente ", e);
         }
     }
     @PutMapping("/update/{id}")
@@ -163,10 +169,10 @@ public class AlbumController {
             album.setMedia(album.calcularMedia());
             albumService.updateAlbum(album);
 
-            System.out.println("Album: " + album.getNomeAlbum() + ", avaliado com sucesso!"); //Exibe no terminal
-            String mensagem = "Nota: " + nota + ", atribuída ao album: " + album.getNomeAlbum() + ", com sucesso!"; //configura msg para exibir no corpo da requisição
+            String mensagem = "Nota: " + nota + ", atribuída ao album: " + album.getNomeAlbum() + ", com sucesso!";
 
-            return ResponseEntity.ok().body(mensagem);
+            System.out.println(mensagem); //Exibe no terminal
+            return ResponseEntity.ok().body(mensagem); //Exibe no corpo da requisição
 
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível avaliar o album com id: " + id, e);

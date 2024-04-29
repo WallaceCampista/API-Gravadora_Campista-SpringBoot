@@ -10,7 +10,7 @@ import java.util.Arrays;
 @Component
 public class JwtTokenInterceptor implements HandlerInterceptor {
 
-    protected final String[] excludedUrls = {"/usuarios/login"};
+    protected final String[] excludedUrls = {"/usuarios/**"};
 
 
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

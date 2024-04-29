@@ -26,43 +26,43 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class RestExceptionHandler{
 
-    private final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+//    private final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
 
-    @ExceptionHandler(RuntimeException.class)
-    public ProblemDetail handleSecurityException(RuntimeException ex) {
-
-        ProblemDetail errorDetail = null;
-
-        if (ex instanceof BadCredentialsException) {
-            errorDetail = ProblemDetail
-                    .forStatusAndDetail(HttpStatusCode.valueOf(400), ex.getMessage());
-            errorDetail.setProperty("mensagem", "Erro na autenticação.");
-        }
-
-        if (ex instanceof AccessDeniedException) {
-            errorDetail = ProblemDetail
-                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
-            errorDetail.setProperty("mensagem", "Usuário não autenticado");
-
-            log.error(ex.getMessage(), ex);
-        }
-
-        if (ex instanceof JWTVerificationException) {
-            errorDetail = ProblemDetail
-                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
-            errorDetail.setProperty("mensagem", "Usuário não autorizado!");
-        }
-        return errorDetail;
-    }
-    @ExceptionHandler(AccessDeniedException.class)
+//    @ExceptionHandler(RuntimeException.class)
+//    public ProblemDetail handleSecurityException(RuntimeException ex) {
+//
+//        ProblemDetail errorDetail = null;
+//
+//        if (ex instanceof BadCredentialsException) {
+//            errorDetail = ProblemDetail
+//                    .forStatusAndDetail(HttpStatusCode.valueOf(400), ex.getMessage());
+//            errorDetail.setProperty("mensagem", "Erro na autenticação.");
+//        }
+//
+//        if (ex instanceof AccessDeniedException) {
+//            errorDetail = ProblemDetail
+//                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
+//            errorDetail.setProperty("mensagem", "Usuário não autenticado");
+//
+//            log.error(ex.getMessage(), ex);
+//        }
+//
+//        if (ex instanceof JWTVerificationException) {
+//            errorDetail = ProblemDetail
+//                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
+//            errorDetail.setProperty("mensagem", "Usuário não autorizado!");
+//        }
+//        return errorDetail;
+//    }
+    @ExceptionHandler(AccessDeniedException.class) //funcionando quando nao passa o token
     protected ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
 
         ApiErrorDetails errorDetails = ApiErrorDetails.Builder
                 .newBuilder()
                 .timestamp(new Date().getTime())
                 .status(HttpStatus.FORBIDDEN.value())
-                .title("Access Denied")
-                .detail("Access Denied")
+                .title("Usuário não autenticado")
+                .detail("Token inválido ou inexistente na requisição")
                 .developerMessage(ex.getMessage())
                 .build();
         return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
@@ -78,8 +78,8 @@ public class RestExceptionHandler{
                 .newBuilder()
                 .timestamp(new Date().getTime())
                 .status(HttpStatus.BAD_REQUEST.value())
-                .title("Constraint Violation Error")
-                .detail("Constraint Violation Error")
+                .title("Erro de Violação")
+                .detail("Preencha os campos obrigatorios!")
                 .developerMessage(ex.getClass().getName())
                 .field("N/A")
                 .fieldMessage(String.join(", ", violations))
@@ -99,6 +99,19 @@ public class RestExceptionHandler{
                 .developerMessage(rfnException.getClass().getName())
                 .build();
         return new ResponseEntity<>(rnfDetails, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(NullPointerException.class)
+    protected ResponseEntity<Object> handleNullPointerException(NullPointerException ex, WebRequest request) {
+
+        ApiErrorDetails errorDetails = ApiErrorDetails.Builder
+                .newBuilder()
+                .timestamp(new Date().getTime())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .title("Internal Server Error")
+                .detail("NullPointerException occurred")
+                .developerMessage(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
@@ -138,16 +151,3 @@ public class RestExceptionHandler{
 //        return new ResponseEntity<>(errorDetails, headers, status);
 //    }
 //
-//    @ExceptionHandler(NullPointerException.class)
-//    protected ResponseEntity<Object> handleNullPointerException(NullPointerException ex, WebRequest request) {
-//
-//        ApiErrorDetails errorDetails = ApiErrorDetails.Builder
-//                .newBuilder()
-//                .timestamp(new Date().getTime())
-//                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-//                .title("Internal Server Error")
-//                .detail("NullPointerException occurred")
-//                .developerMessage(ex.getMessage())
-//                .build();
-//        return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
-//    }
