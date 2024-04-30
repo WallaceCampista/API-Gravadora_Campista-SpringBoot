@@ -1,12 +1,18 @@
 package com.example.apigravadora.controller;
 
-import com.example.apigravadora.Dto.BandaDto;
+import com.example.apigravadora.Dto.RequestDto.BandaRequestDto;
+import com.example.apigravadora.Dto.ResponseDto.BandaResponseDto;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Banda_Table;
 import com.example.apigravadora.model.Banda;
+import com.example.apigravadora.repository.BandaRepository;
 import com.example.apigravadora.services.AvaliacaoService;
 import com.example.apigravadora.services.BandaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,18 +29,11 @@ public class BandaController {
     private BandaService bandaService;
     @Autowired
     private AvaliacaoService avaliacaoService;
+    @Autowired
+    private BandaRepository bandaRepository;
 
     @PostMapping("/novo-registro")
-    public ResponseEntity<?> create(@Valid @RequestBody Banda bandaRequest) {
-        // Verifica se o nome da banda está vazio
-        if (bandaRequest.getNomeBanda().isEmpty()) {
-            return ResponseEntity.badRequest().body("Nome da BANDA não pode estar vazio!");
-        }
-
-        // Verifica se o resumo da banda está vazio
-        if (bandaRequest.getResumoBanda().isEmpty()) {
-            return ResponseEntity.badRequest().body("RESUMO da banda não pode estar vazio!");
-        }
+    public ResponseEntity<?> create(@Valid @RequestBody BandaRequestDto bandaRequest) {
 
         Banda bandas;
 
@@ -43,31 +42,28 @@ public class BandaController {
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(bandas.getBandaId()).toUri();
 
         // Criar o objeto de retorno com os dados da banda criada
-        BandaDto bandaDto = new BandaDto();
-        bandaDto.setId(bandas.getBandaId());
-        bandaDto.setNomeBanda(bandas.getNomeBanda());
-        bandaDto.setResumoBanda(bandas.getResumoBanda());
+        BandaResponseDto bandaResponseDto = new BandaResponseDto();
+        bandaResponseDto.setId(bandas.getBandaId());
+        bandaResponseDto.setNomeBanda(bandas.getNomeBanda());
+        bandaResponseDto.setResumoBanda(bandas.getResumoBanda());
 
-        System.out.println();
-        System.out.println("\t##### Banda/Artista " + bandas.getNomeBanda() + " criada! #####");
-        System.out.println();
-
-        return ResponseEntity.created(uri).body("Banda/Artista criada com sucesso!\n\n{\n    \"id\": " +
-                bandaDto.getId() + ",\n    \"nomeBanda\": \"" + bandaDto.getNomeBanda() +
-                "\",\n    \"resumoBanda\": \"" + bandaDto.getResumoBanda() + "\"\n}");
+        return ResponseEntity.created(uri).body(uri);
+    }
+    @GetMapping("/bandaspaginadas")
+    public ResponseEntity<Page<Banda>> bandaspaginadas(@PageableDefault(sort="nomeBanda", direction = Sort.Direction.ASC) Pageable paginacao) {
+        var page = bandaRepository.findAllByExcluidoFalse(paginacao);
+        return ResponseEntity.ok(page);
     }
     @GetMapping("/listarbandassimples")
-    public ResponseEntity<List<BandaDto>> listarbandassimples() {
+    public ResponseEntity<List<BandaResponseDto>> listarbandassimples() {
         try {
             List<Banda> bandas = bandaService.getAllBanda();
 
-            List<BandaDto> bandasDTO = bandas.stream()
-                    .map(banda -> new BandaDto(banda.getBandaId(), banda.getNomeBanda(), banda.getResumoBanda()))
+            List<BandaResponseDto> bandaresponseDTO = bandas.stream()
+                    .map(banda -> new BandaResponseDto(banda.getBandaId(), banda.getNomeBanda(), banda.getResumoBanda()))
                     .toList();
 
-            System.out.println("\t##### Listando dados simples das Bandas/Artistas! #####");
-
-            return ResponseEntity.ok(bandasDTO);
+            return ResponseEntity.ok(bandaresponseDTO);
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível listar bandas, por favor, tente novamente ", e);
         }
@@ -87,24 +83,6 @@ public class BandaController {
                 throw new RuntimeException("Não foi possível listar dados completos, por favor, tente novamente ", e);
         }
     }
-//    @GetMapping("/paginacaobandascompleto")
-//    public ResponseEntity<List<Banda>> paginacaobandascompleto(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "10") int size) {
-//        try {
-//            Pageable pageable = (Pageable) PageRequest.of(page, size);
-//            Page<Banda> bandaPage = this.bandaService.getAllBanda(pageable);
-//
-//            System.out.println();
-//            System.out.println("\t##### Listando dados completos das Bandas/Artistas! #####"); //retorno no terminal caso de certo.
-//            System.out.println();
-//
-//            return ResponseEntity.ok().body(bandaPage.getContent()); //retorno de requisição caso de certo.
-//
-//        } catch (Exception e) {
-//            throw new RuntimeException("Não foi possível listar dados completos, por favor, tente novamente ", e);
-//        }
-//    }
     @PutMapping("/update/{id}")
     public ResponseEntity<?> update(@PathVariable("id") Long id, @RequestBody Banda bandaRequest) {
         try {

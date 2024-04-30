@@ -3,8 +3,6 @@ package com.example.apigravadora.model;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Musica_Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -18,11 +16,9 @@ public class Musica {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long musicaId;
 
-    @NotNull(message = "Nome da Música é obrigatorio")
     @Column(name = "Nome_Musica")
     private String nomeMusica;
 
-    @NotNull(message = "Resumo da Música é obrigatorio")
     @Column(name = "Resumo_Musica")
     private String descricaoMusica;
 

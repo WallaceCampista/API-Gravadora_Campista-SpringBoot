@@ -4,4 +4,5 @@ import com.example.apigravadora.model.Musica;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface MusicaRepository extends JpaRepository<Musica, Long> {
+    boolean existsByNomeMusica(String nomeMusica);
 }

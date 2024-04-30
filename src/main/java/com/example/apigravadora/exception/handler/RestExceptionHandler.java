@@ -8,52 +8,56 @@ import com.example.apigravadora.exception.error.ValidationErrorDetails;
 import jakarta.validation.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
 @RestControllerAdvice
 public class RestExceptionHandler{
 
-//    private final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
+    private final Logger log = LoggerFactory.getLogger(RestExceptionHandler.class);
 
-//    @ExceptionHandler(RuntimeException.class)
-//    public ProblemDetail handleSecurityException(RuntimeException ex) {
-//
-//        ProblemDetail errorDetail = null;
-//
-//        if (ex instanceof BadCredentialsException) {
-//            errorDetail = ProblemDetail
-//                    .forStatusAndDetail(HttpStatusCode.valueOf(400), ex.getMessage());
-//            errorDetail.setProperty("mensagem", "Erro na autenticação.");
-//        }
-//
-//        if (ex instanceof AccessDeniedException) {
-//            errorDetail = ProblemDetail
-//                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
-//            errorDetail.setProperty("mensagem", "Usuário não autenticado");
-//
-//            log.error(ex.getMessage(), ex);
-//        }
-//
-//        if (ex instanceof JWTVerificationException) {
-//            errorDetail = ProblemDetail
-//                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
-//            errorDetail.setProperty("mensagem", "Usuário não autorizado!");
-//        }
-//        return errorDetail;
-//    }
+    @ExceptionHandler(RuntimeException.class)
+    public ProblemDetail handleSecurityException(RuntimeException ex) {
+
+        ProblemDetail errorDetail = null;
+
+        if (ex instanceof BadCredentialsException) {
+            errorDetail = ProblemDetail
+                    .forStatusAndDetail(HttpStatusCode.valueOf(400), ex.getMessage());
+            errorDetail.setProperty("mensagem", "Erro na autenticação.");
+        }
+
+        if (ex instanceof AccessDeniedException) {
+            errorDetail = ProblemDetail
+                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
+            errorDetail.setProperty("mensagem", "Usuário não autenticado");
+
+            log.error(ex.getMessage(), ex);
+        }
+
+        if (ex instanceof JWTVerificationException) {
+            errorDetail = ProblemDetail
+                    .forStatusAndDetail(HttpStatusCode.valueOf(401), ex.getMessage());
+            errorDetail.setProperty("mensagem", "Usuário não autorizado!");
+        }
+        return errorDetail;
+    }
     @ExceptionHandler(AccessDeniedException.class) //funcionando quando nao passa o token
     protected ResponseEntity<Object> handleAccessDeniedException(AccessDeniedException ex, WebRequest request) {
 
@@ -113,41 +117,21 @@ public class RestExceptionHandler{
                 .build();
         return new ResponseEntity<>(errorDetails, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(MethodArgumentNotValidException.class) //Dispara quando argumento da reposicao é invalido
+    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            String fieldName = error.getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return ResponseEntity.badRequest().body(errors);
+    }
+    @ExceptionHandler(DataIntegrityViolationException.class) //Dispara quando ja existe um dado referente ao fornecido
+    public ResponseEntity<Object> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("mensagem", "Violação de integridade de dados: " + ex.getMessage());
+        return ResponseEntity.badRequest().body(errors);
+    }
 
 }
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException manvException, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-//
-//        //Código para lidar com validação de argumento inválido
-//        List<FieldError> fieldErrors = manvException.getBindingResult().getFieldErrors();
-//        String fields = fieldErrors.stream().map(FieldError::getField).collect(Collectors.joining(","));
-//        String fieldMessages = fieldErrors.stream().map(FieldError::getDefaultMessage).collect(Collectors.joining(","));
-//
-//        ValidationErrorDetails rnfDetails = ValidationErrorDetails.Builder
-//                .newBuilder()
-//                .timestamp(new Date().getTime())
-//                .status(HttpStatus.BAD_REQUEST.value())
-//                .title("Field Validation Error")
-//                .detail("Field Validation Error")
-//                .developerMessage(manvException.getClass().getName())
-//                .field(fields)
-//                .fieldMessage(fieldMessages)
-//                .build();
-//        return new ResponseEntity<>(rnfDetails, HttpStatus.BAD_REQUEST);
-//    }
-//
-//    @Override
-//    public ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-//
-//        //Código para lidar com validação de argumento inválido
-//        ErrorDetails errorDetails = ErrorDetails.Builder
-//                .newBuilder()
-//                .timestamp(new Date().getTime())
-//                .status(status.value())
-//                .title("Internal Exception")
-//                .detail(ex.getMessage())
-//                .developerMessage(ex.getClass().getName())
-//                .build();
-//        return new ResponseEntity<>(errorDetails, headers, status);
-//    }
-//

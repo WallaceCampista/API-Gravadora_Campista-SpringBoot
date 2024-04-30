@@ -7,12 +7,14 @@ import com.example.apigravadora.repository.AlbumRepository;
 import com.example.apigravadora.repository.BandaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class AlbumService {
 
     @Autowired
@@ -20,9 +22,13 @@ public class AlbumService {
     @Autowired
     private BandaRepository bandaRepository;
 
-    @Transactional
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public Album createAlbum(AlbumRequestDto album) {
 
+        // Verificar se a banda já existe pelo nome
+        if (albumRepository.existsByNomeAlbum(album.getNomeAlbum())) {
+            throw new DataIntegrityViolationException("Já existe um album com o nome fornecido.");
+        }
         try {
             Album albumEntity = new Album();
             albumEntity.setNomeAlbum(album.getNomeAlbum());
@@ -30,9 +36,7 @@ public class AlbumService {
 
             Optional<Banda> banda = bandaRepository.findById(album.getBandaID());
 
-            if (banda.isPresent()) {
-                albumEntity.setBanda(banda.get());
-            }
+            banda.ifPresent(albumEntity::setBanda);
 
             albumRepository.save(albumEntity);
 
@@ -42,15 +46,17 @@ public class AlbumService {
         }
     }
 
-    @Transactional
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public List<Album> getAllAlbuns() {
         return albumRepository.findAll();
     }
 
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public Album getAlbumById(Long id) {
         return albumRepository.findById(id).orElse(null);
     }
 
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public void updateAlbum(Album album) {
         try {
             albumRepository.save(album);
@@ -60,6 +66,7 @@ public class AlbumService {
         }
     }
 
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public void deleteAlbum(Long id) {
         try {
             albumRepository.deleteById(id);

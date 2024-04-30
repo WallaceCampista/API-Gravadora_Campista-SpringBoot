@@ -1,8 +1,8 @@
 package com.example.apigravadora.controller;
 
-import com.example.apigravadora.Dto.user.AuthenticationDTO;
-import com.example.apigravadora.Dto.user.LoginResponseDTO;
-import com.example.apigravadora.Dto.user.RegisterDTO;
+import com.example.apigravadora.Dto.UserDto.AuthenticationDTO;
+import com.example.apigravadora.Dto.UserDto.LoginResponseDTO;
+import com.example.apigravadora.Dto.UserDto.RegisterDTO;
 import com.example.apigravadora.model.User.Usuario;
 import com.example.apigravadora.infra.security.TokenService;
 import com.example.apigravadora.repository.UserRepository;

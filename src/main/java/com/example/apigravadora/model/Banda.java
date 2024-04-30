@@ -3,10 +3,8 @@ package com.example.apigravadora.model;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Banda_Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
 import java.util.List;
 
 @Entity  //Anotação que indica que classe é uma entidade.
@@ -18,13 +16,14 @@ public class Banda {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long bandaId;
 
-    @NotNull(message = "Nome da Banda é obrigatorio")
     @Column(name = "Nome_Banda", unique = true)
     private String nomeBanda;
 
-    @NotNull(message = "Nome da Banda é obrigatorio")
     @Column(name = "Resumo_Banda")
     private String resumoBanda;
+
+    @Column(name = "Excluido")
+    private Boolean excluido;
 
     @Column(name = "Media_Banda")
     private double media;
@@ -35,6 +34,7 @@ public class Banda {
     @JsonIgnore // Ignora a serialização desse campo pelo Jackson
     @OneToMany(mappedBy = "bandaID", fetch = FetchType.LAZY) //Criando relação de um para muitos
     private List<Avaliacao_Banda_Table> avaliacoes;
+
 
     //CONSTRUTORES
     public Banda() {

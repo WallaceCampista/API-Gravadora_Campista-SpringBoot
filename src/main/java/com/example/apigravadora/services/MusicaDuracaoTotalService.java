@@ -15,7 +15,7 @@ public class MusicaDuracaoTotalService {
     @Autowired
     private AlbumService albumService;
 
-    public void atualizarDuracaoTotalGlobalmente() {
+    public void atualizarDuracaoTotalAlbum() {
         List<Album> albuns = albumService.getAllAlbuns();
         for (Album album : albuns) {
             album.calcularDuracaoTotal();

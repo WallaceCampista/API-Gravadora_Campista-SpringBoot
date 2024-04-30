@@ -1,4 +1,4 @@
-package com.example.apigravadora.Dto;
+package com.example.apigravadora.Dto.ResponseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -7,8 +7,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data //Anotação que cria automaticamente o Get e Set do atributo.
-public class BandaDto {
+public class MusicaResponseDto {
     private Long id;
-    private String nomeBanda;
-    private String resumoBanda;
+    private String nomeMusica;
+    private String descricaoMusica;
+    private double duracaoMusica;
 }

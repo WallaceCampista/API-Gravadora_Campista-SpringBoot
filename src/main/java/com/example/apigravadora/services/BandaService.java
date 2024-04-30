@@ -1,44 +1,53 @@
 package com.example.apigravadora.services;
 
+import com.example.apigravadora.Dto.RequestDto.BandaRequestDto;
 import com.example.apigravadora.model.Banda;
 import com.example.apigravadora.repository.BandaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.awt.print.Pageable;
 import java.util.List;
 
 @Service
+@Transactional
 public class BandaService {
 
     @Autowired
     private BandaRepository bandaRepository;
 
-    public Banda createBanda(Banda banda) {
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
+    public Banda createBanda(BandaRequestDto banda) {
+
+        // Verificar se a banda já existe pelo nome
+        if (bandaRepository.existsByNomeBanda(banda.getNomeBanda())) {
+            throw new DataIntegrityViolationException("Já existe uma banda com o nome fornecido.");
+        }
         try {
-            // Verifica se a banda já existe no banco de dados pelo nome
-//            if (bandaRepository.findByNome(banda.getNomeBanda()) != null) {
-//                throw new RuntimeException("Banda com este nome já existe.");
-//            }
-            bandaRepository.save(banda);
-            return banda;
+            Banda bandaEntity = new Banda();
+            bandaEntity.setNomeBanda(banda.getNomeBanda());
+            bandaEntity.setResumoBanda(banda.getResumoBanda());
+
+            bandaRepository.save(bandaEntity);
+
+            return bandaEntity;
         } catch (Exception e) {
             throw new RuntimeException("Não foi possível criar a banda.", e);
         }
     }
 
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public List<Banda> getAllBanda() {
         return bandaRepository.findAll();
     }
 
-//    public Page<Banda> getAllBanda(Pageable pageable) {
-//        return bandaRepository.findAll(pageable);
-//    }
-
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public Banda getBandaById(Long id) {
         return bandaRepository.findById(id).orElse(null);
     }
 
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public void updateBanda(Banda banda) {
         try {
             bandaRepository.save(banda);
@@ -48,6 +57,7 @@ public class BandaService {
         }
     }
 
+    @Transactional //se ocorrer uma exceção durante a execução do método, a transação será revertida
     public void deleteBanda(Long id) {
         try {
             bandaRepository.deleteById(id);

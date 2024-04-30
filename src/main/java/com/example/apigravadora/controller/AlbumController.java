@@ -1,11 +1,9 @@
 package com.example.apigravadora.controller;
 
-import com.example.apigravadora.Dto.AlbumDto;
-import com.example.apigravadora.Dto.BandaDto;
+import com.example.apigravadora.Dto.ResponseDto.AlbumResponseDto;
 import com.example.apigravadora.Dto.RequestDto.AlbumRequestDto;
 import com.example.apigravadora.model.Album;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
-import com.example.apigravadora.model.Banda;
 import com.example.apigravadora.services.AlbumService;
 import com.example.apigravadora.services.AvaliacaoService;
 import jakarta.validation.Valid;
@@ -29,16 +27,6 @@ public class AlbumController {
 
     @PostMapping("/novo-registro")
     public ResponseEntity<?> create(@Valid @RequestBody AlbumRequestDto albumRequest) {
-        try {
-            // Verifica se o nome do album está vazio
-            if (albumRequest.getNomeAlbum().isEmpty()) {
-                return ResponseEntity.badRequest().body("NOME do album não pode estar vazio!");
-            }
-
-            // Verifica se o resumo do album está vazio
-            if (albumRequest.getResumoAlbum().isEmpty()) {
-                return ResponseEntity.badRequest().body("RESUMO do album não pode estar vazio!");
-            }
 
             Album albuns;
 
@@ -47,29 +35,20 @@ public class AlbumController {
             URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(albuns.getAlbumId()).toUri();
 
             // Criar o objeto de retorno com os dados do álbum criado
-            AlbumDto albumDto = new AlbumDto();
-            albumDto.setId(albuns.getAlbumId());
-            albumDto.setNomeAlbum(albuns.getNomeAlbum());
-            albumDto.setResumoAlbum(albuns.getResumoAlbum());
+            AlbumResponseDto albumResponseDto = new AlbumResponseDto();
+            albumResponseDto.setId(albuns.getAlbumId());
+            albumResponseDto.setNomeAlbum(albuns.getNomeAlbum());
+            albumResponseDto.setResumoAlbum(albuns.getResumoAlbum());
 
-            System.out.println("\t##### Album " + albuns.getNomeAlbum() + " criado! #####");
-            System.out.println();
-
-            return ResponseEntity.created(uri).body("Album criado com sucesso!\n\n{\n    \"id\": " +
-                    albumDto.getId() + ",\n    \"nomeAlbum\": \"" + albumDto.getNomeAlbum() +
-                    "\",\n    \"resumoAlbum\": \"" + albumDto.getResumoAlbum() + "\"\n}");
-
-        } catch (RuntimeException exception) {
-            throw new RuntimeException("- Este id é valido para uma banda existente ?" + "\n- Preencheu (id, Nome, Resumo) obrigatórios?\n\n");
-        }
+            return ResponseEntity.created(uri).body(albumResponseDto);
     }
     @GetMapping("/listaralbunssimples")
-    public ResponseEntity<List<AlbumDto>> listaralbunssimples() {
+    public ResponseEntity<List<AlbumResponseDto>> listaralbunssimples() {
         try {
             List<Album> albuns = albumService.getAllAlbuns();
 
-            List<AlbumDto> albunsDTO = albuns.stream()
-                    .map(album -> new AlbumDto(album.getAlbumId(), album.getNomeAlbum(), album.getResumoAlbum()))
+            List<AlbumResponseDto> albunsDTO = albuns.stream()
+                    .map(album -> new AlbumResponseDto(album.getAlbumId(), album.getNomeAlbum(), album.getResumoAlbum()))
                     .toList();
 
             System.out.println("\t##### Listando dados simples dos Albuns! #####");

@@ -3,7 +3,6 @@ package com.example.apigravadora.model;
 import com.example.apigravadora.model.Avaliacao.Avaliacao_Album_Table;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 import java.util.List;
@@ -17,11 +16,9 @@ public class Album {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //A geração do ID sera automatica e
     private Long albumId;
 
-    @NotNull(message = "Nome do Album é obrigatorio")
     @Column(name = "Nome_Album", unique = true)
     private String nomeAlbum;
 
-    @NotNull(message = "Resumo do Album é obrigatorio")
     @Column(name = "Resumo_Album")
     private String resumoAlbum;
 
